@@ -1,0 +1,116 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  admin
+  interviewer
+  candidate
+}
+
+enum InterviewStatus {
+  scheduled
+  active
+  completed
+  cancelled
+}
+
+enum Rating {
+  HIRE
+  CONSIDER
+  RISKY
+  PASS
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String?  @map("password_hash")
+  firstName    String?  @map("first_name")
+  lastName     String?  @map("last_name")
+  role         UserRole @default(interviewer)
+  googleId     String?  @map("google_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  interviews Interview[] @relation("InterviewerInterviews")
+
+  @@map("users")
+}
+
+model Interview {
+  id              String          @id @default(uuid())
+  interviewerId   String          @map("interviewer_id")
+  interviewer     User            @relation("InterviewerInterviews", fields: [interviewerId], references: [id])
+  candidateName   String          @map("candidate_name")
+  candidateEmail  String          @map("candidate_email")
+  sessionCode     String          @unique @map("session_code")
+  status          InterviewStatus @default(scheduled)
+  scheduledAt     DateTime?       @map("scheduled_at")
+  startedAt       DateTime?       @map("started_at")
+  endedAt         DateTime?       @map("ended_at")
+  language        String          @default("python")
+  codeContent     String          @default("") @map("code_content")
+  notes           String?
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+
+  responses AssessmentResponse[]
+  summary   AssessmentSummary?
+
+  @@map("interviews")
+}
+
+model Question {
+  id            Int    @id @default(autoincrement())
+  section       String
+  questionNumber String @map("question_number")
+  questionText  String @map("question_text")
+  scoringGuide  Json?  @map("scoring_guide")
+  maxPoints     Int    @default(4) @map("max_points")
+  sortOrder     Int    @default(0) @map("sort_order")
+
+  responses AssessmentResponse[]
+
+  @@map("questions")
+}
+
+model AssessmentResponse {
+  id          String   @id @default(uuid())
+  interviewId String   @map("interview_id")
+  interview   Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+  questionId  Int      @map("question_id")
+  question    Question @relation(fields: [questionId], references: [id])
+  score       Int      @default(0)
+  notes       String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@unique([interviewId, questionId])
+  @@map("assessment_responses")
+}
+
+model AssessmentSummary {
+  id            String    @id @default(uuid())
+  interviewId   String    @unique @map("interview_id")
+  interview     Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+  scratchScore  Int       @default(0) @map("scratch_score")
+  arduinoScore  Int       @default(0) @map("arduino_score")
+  pythonScore   Int       @default(0) @map("python_score")
+  webdevScore   Int       @default(0) @map("webdev_score")
+  teachingScore Int       @default(0) @map("teaching_score")
+  totalScore    Int       @default(0) @map("total_score")
+  rating        Rating?
+  redFlags      Boolean   @default(false) @map("red_flags")
+  strengths     String?
+  concerns      String?
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@map("assessment_summary")
+}

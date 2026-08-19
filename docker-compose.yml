@@ -1,0 +1,41 @@
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: kemsap_codelive
+      POSTGRES_USER: kemsap
+      POSTGRES_PASSWORD: kemsap
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kemsap"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    ports:
+      - "5000:5000"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://kemsap:kemsap@db:5432/kemsap_codelive
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-dev-refresh-secret-change-me}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}
+      JITSI_DOMAIN: ${JITSI_DOMAIN:-meet.jit.si}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
