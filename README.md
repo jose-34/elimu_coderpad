@@ -86,7 +86,9 @@ browser sessions (dev server **and** production build):
 built in blocks the Pyodide CDN. The *failure* path was verified (clear
 error, Run re-enabled). Run one Python interview manually before first use.
 Jitsi video is likewise unverified for the same reason. Automated tests
-cover the backend only; there are no browser end-to-end tests yet.
+(backend unit, API integration and Playwright browser tests) run in CI; see
+"Running tests". Python execution and video stay out of the automated suite
+because they depend on third-party CDNs.
 
 ## Scope: deferred to Phase 2/3
 
@@ -101,11 +103,6 @@ Left out of this MVP pass — flagged rather than half-built:
 - **Multi-team/organization** support and admin user management UI.
 - Server-side **Docker-sandboxed** code execution (only needed if code must
   run somewhere other than the participants' own browsers).
-- Browser end-to-end tests (Cypress/Playwright). Backend unit tests and API
-  integration tests against a real PostgreSQL exist (see "Running tests");
-  GitHub Actions (`.github/workflows/ci.yml`) lints both packages, runs both
-  test suites, validates the Prisma schema and builds the frontend on every
-  pull request.
 - CRDT-based (Yjs) editing — the current Socket.io broadcast sync is simpler
   and sufficient for the 2-4 participants a single interview has; Yjs is
   worth it if true offline-first / conflict-free editing becomes a
@@ -163,6 +160,24 @@ DATABASE_URL=postgresql://kemsap:kemsap@localhost:5432/kemsap_codelive_test \
 `test:integration` applies migrations and seeds the question bank first.
 Create the database once with
 `docker compose exec db createdb -U kemsap kemsap_codelive_test`.
+
+Browser end-to-end tests (`e2e/`, Playwright + Chromium) build the frontend,
+start the real backend against their own `_test` database, and drive an
+interviewer and a candidate in two separate browser sessions: sign-up and
+sign-in, live code sync, persisted snapshots, JavaScript execution, scoring
+and the dashboard. Jitsi and the Pyodide CDN are blocked during the run.
+```bash
+docker compose exec db createdb -U kemsap kemsap_codelive_e2e_test   # once
+cd e2e
+npm install
+npx playwright install chromium                                      # once
+E2E_DATABASE_URL=postgresql://kemsap:kemsap@localhost:5432/kemsap_codelive_e2e_test \
+  npx playwright test
+```
+
+GitHub Actions (`.github/workflows/ci.yml`) runs lint, all three suites, the
+Prisma schema check and the frontend build on every pull request; a failed
+browser run uploads the Playwright report and traces as an artifact.
 
 ### Or everything via Docker Compose
 ```bash

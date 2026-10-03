@@ -41,9 +41,11 @@ export default function InterviewSessionPage() {
     if (!token) return undefined;
     const s = connectSocket({ token });
     s.on('connect', () => s.emit('interview:join', { interviewId: id }));
-    s.on('presence:list', setPresence);
-    s.on('user:joined', (u) => setPresence((p) => [...p.filter((x) => x.userId !== u.userId), u]));
-    s.on('user:left', (u) => setPresence((p) => p.filter((x) => x.userId !== u.userId)));
+    // Presence is keyed by socket (one person may have several tabs open), and
+    // the server's list includes this socket, which isn't an "other".
+    s.on('presence:list', (list) => setPresence(list.filter((u) => u.socketId !== s.id)));
+    s.on('user:joined', (u) => setPresence((p) => [...p.filter((x) => x.socketId !== u.socketId), u]));
+    s.on('user:left', (u) => setPresence((p) => p.filter((x) => x.socketId !== u.socketId)));
     setSocket(s);
     return () => disconnectSocket();
   }, [id, token]);

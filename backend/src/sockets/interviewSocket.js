@@ -149,6 +149,7 @@ function registerInterviewSocket(io) {
       });
 
       socket.to(roomKey(interviewId)).emit('user:joined', {
+        socketId: socket.id,
         userId: socket.user.id,
         name: socket.user.name,
         role: socket.user.role,
@@ -209,7 +210,7 @@ function leaveCurrentRoom(socket) {
   }
 
   socket.leave(roomKey(interviewId));
-  socket.to(roomKey(interviewId)).emit('user:left', { userId: socket.user?.id });
+  socket.to(roomKey(interviewId)).emit('user:left', { socketId: socket.id, userId: socket.user?.id });
   socket.data.interviewId = null;
 }
 
