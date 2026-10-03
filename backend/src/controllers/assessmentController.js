@@ -65,7 +65,10 @@ const scoreQuestion = asyncHandler(async (req, res) => {
   await assertOwnedInterview(interviewId, req.user.id);
   const data = scoreQuestionSchema.parse(req.body);
 
-  const question = await prisma.question.findUnique({ where: { id: parseInt(questionId, 10) } });
+  const id = Number(questionId);
+  const question = Number.isInteger(id)
+    ? await prisma.question.findUnique({ where: { id } })
+    : null;
   if (!question) throw new ApiError(404, 'Question not found');
 
   await prisma.assessmentResponse.upsert({

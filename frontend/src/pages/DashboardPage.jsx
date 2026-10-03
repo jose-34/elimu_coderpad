@@ -43,8 +43,9 @@ function CreateInterviewForm({ onCreated }) {
       <h2 className="mb-4 text-lg font-semibold text-slate-900">New interview</h2>
       <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-3 sm:grid-cols-4 sm:items-end">
         <div className="sm:col-span-2">
-          <label className="mb-1 block text-sm font-medium text-slate-700">Candidate name</label>
+          <label htmlFor="interview-candidate-name" className="mb-1 block text-sm font-medium text-slate-700">Candidate name</label>
           <input
+            id="interview-candidate-name"
             required
             value={form.candidateName}
             onChange={update('candidateName')}
@@ -52,8 +53,9 @@ function CreateInterviewForm({ onCreated }) {
           />
         </div>
         <div className="sm:col-span-2">
-          <label className="mb-1 block text-sm font-medium text-slate-700">Candidate email</label>
+          <label htmlFor="interview-candidate-email" className="mb-1 block text-sm font-medium text-slate-700">Candidate email</label>
           <input
+            id="interview-candidate-email"
             type="email"
             required
             value={form.candidateEmail}
@@ -62,8 +64,9 @@ function CreateInterviewForm({ onCreated }) {
           />
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">Language</label>
+          <label htmlFor="interview-language" className="mb-1 block text-sm font-medium text-slate-700">Language</label>
           <select
+            id="interview-language"
             value={form.language}
             onChange={update('language')}
             className="w-full rounded-md border border-slate-300 px-3 py-2 focus:border-brand-500 focus:outline-none"

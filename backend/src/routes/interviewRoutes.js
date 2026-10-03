@@ -1,12 +1,13 @@
 const express = require('express');
 const { requireAuth } = require('../middleware/auth');
+const { joinLimiter } = require('../middleware/rateLimiter');
 const interviewController = require('../controllers/interviewController');
 const assessmentController = require('../controllers/assessmentController');
 
 const router = express.Router();
 
 // Public: candidate joins via session code, no auth required.
-router.get('/join/:sessionCode', interviewController.joinBySessionCode);
+router.get('/join/:sessionCode', joinLimiter, interviewController.joinBySessionCode);
 
 router.use(requireAuth);
 router.post('/', interviewController.create);

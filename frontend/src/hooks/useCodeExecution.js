@@ -107,7 +107,7 @@ export function useCodeExecution() {
         error = e.message;
       }
       parent.postMessage({ logs, error }, '*');
-    <\/script>`;
+    </script>`;
 
     iframe.srcdoc = srcdoc;
     document.body.appendChild(iframe);

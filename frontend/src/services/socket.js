@@ -3,10 +3,10 @@ import { API_BASE_URL } from './api';
 
 let socket = null;
 
-export function connectSocket({ token, guestName }) {
+export function connectSocket({ token, guestName, sessionCode }) {
   if (socket) socket.disconnect();
   socket = io(API_BASE_URL, {
-    auth: token ? { token } : { guestName },
+    auth: token ? { token } : { guestName, sessionCode },
     transports: ['websocket'],
   });
   return socket;

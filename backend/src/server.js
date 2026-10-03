@@ -37,8 +37,18 @@ const io = new Server(httpServer, {
 });
 registerInterviewSocket(io);
 
-httpServer.listen(env.port, () => {
-  console.log(`KEMSAP CodeLive backend listening on port ${env.port} (${env.nodeEnv})`);
-});
+if (require.main === module) {
+  httpServer.listen(env.port, () => {
+    console.log(`KEMSAP CodeLive backend listening on port ${env.port} (${env.nodeEnv})`);
+  });
+
+  const shutdown = async () => {
+    io.close();
+    await registerInterviewSocket.flushPendingSaves();
+    process.exit(0);
+  };
+  process.on('SIGTERM', shutdown);
+  process.on('SIGINT', shutdown);
+}
 
 module.exports = { app, httpServer, io };

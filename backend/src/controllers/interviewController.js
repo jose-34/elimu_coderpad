@@ -73,7 +73,13 @@ const getById = asyncHandler(async (req, res) => {
 });
 
 const start = asyncHandler(async (req, res) => {
-  await loadOwnedInterview(req.params.id, req.user.id);
+  const existing = await loadOwnedInterview(req.params.id, req.user.id);
+  if (existing.status === 'active') {
+    return res.json({ status: existing.status, startedAt: existing.startedAt });
+  }
+  if (existing.status !== 'scheduled') {
+    throw new ApiError(409, `Cannot start an interview that is ${existing.status}`);
+  }
   const interview = await prisma.interview.update({
     where: { id: req.params.id },
     data: { status: 'active', startedAt: new Date() },
@@ -83,6 +89,9 @@ const start = asyncHandler(async (req, res) => {
 
 const end = asyncHandler(async (req, res) => {
   const existing = await loadOwnedInterview(req.params.id, req.user.id);
+  if (existing.status === 'completed' || existing.status === 'cancelled') {
+    throw new ApiError(409, `Interview is already ${existing.status}`);
+  }
   const endedAt = new Date();
   const durationMinutes = existing.startedAt
     ? Math.round((endedAt.getTime() - new Date(existing.startedAt).getTime()) / 60000)

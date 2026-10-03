@@ -1,6 +1,7 @@
 // Runs candidate Python in a dedicated worker (Pyodide, loaded from the CDN)
 // so a hung/looping submission can be killed with worker.terminate()
 // from the main thread instead of freezing the whole tab.
+/* global loadPyodide */ // defined by the importScripts() call below
 const PYODIDE_VERSION = 'v0.26.2';
 
 let pyodideReadyPromise = null;

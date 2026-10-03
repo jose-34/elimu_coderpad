@@ -43,9 +43,23 @@ export default function AssessmentPanel({ interviewId, questions }) {
 
   scoresRef.current = scores;
 
-  useEffect(() => {
-    const timers = notesTimers.current;
-    return () => Object.values(timers).forEach(clearTimeout);
+  // Send any notes still waiting on their debounce right away, rather than
+  // dropping them (on unmount) or racing them (on final save).
+  function flushPendingNotes() {
+    const pending = Object.entries(notesTimers.current);
+    notesTimers.current = {};
+    return Promise.all(
+      pending.map(([questionId, timer]) => {
+        clearTimeout(timer);
+        return persist(questionId);
+      }),
+    );
+  }
+
+  const flushRef = useRef(flushPendingNotes);
+  flushRef.current = flushPendingNotes;
+  useEffect(() => () => {
+    flushRef.current();
   }, []);
 
   useEffect(() => {
@@ -97,12 +111,16 @@ export default function AssessmentPanel({ interviewId, questions }) {
     };
 
     clearTimeout(notesTimers.current[question.id]);
-    notesTimers.current[question.id] = setTimeout(() => persist(question.id), NOTES_DEBOUNCE_MS);
+    notesTimers.current[question.id] = setTimeout(() => {
+      delete notesTimers.current[question.id];
+      persist(question.id);
+    }, NOTES_DEBOUNCE_MS);
   }
 
   async function saveFinal() {
     setSavingFinal(true);
     try {
+      await flushPendingNotes();
       const { data } = await api.put(`/interviews/${interviewId}/assessment/final`, final);
       setSummary(data.summary);
     } finally {

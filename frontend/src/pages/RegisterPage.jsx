@@ -37,8 +37,9 @@ export default function RegisterPage() {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">First name</label>
+            <label htmlFor="register-first-name" className="mb-1 block text-sm font-medium text-slate-700">First name</label>
             <input
+              id="register-first-name"
               required
               value={form.firstName}
               onChange={update('firstName')}
@@ -46,8 +47,9 @@ export default function RegisterPage() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">Last name</label>
+            <label htmlFor="register-last-name" className="mb-1 block text-sm font-medium text-slate-700">Last name</label>
             <input
+              id="register-last-name"
               required
               value={form.lastName}
               onChange={update('lastName')}
@@ -56,8 +58,9 @@ export default function RegisterPage() {
           </div>
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">Email</label>
+          <label htmlFor="register-email" className="mb-1 block text-sm font-medium text-slate-700">Email</label>
           <input
+            id="register-email"
             type="email"
             required
             value={form.email}
@@ -66,8 +69,9 @@ export default function RegisterPage() {
           />
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">Password</label>
+          <label htmlFor="register-password" className="mb-1 block text-sm font-medium text-slate-700">Password</label>
           <input
+            id="register-password"
             type="password"
             required
             minLength={8}
