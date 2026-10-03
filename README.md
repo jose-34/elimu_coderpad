@@ -85,8 +85,8 @@ browser sessions (dev server **and** production build):
 **Not verified here:** successful Python execution — the sandbox this was
 built in blocks the Pyodide CDN. The *failure* path was verified (clear
 error, Run re-enabled). Run one Python interview manually before first use.
-Jitsi video is likewise unverified for the same reason. There is only a
-small automated test suite so far (see Scope below).
+Jitsi video is likewise unverified for the same reason. Automated tests
+cover the backend only; there are no browser end-to-end tests yet.
 
 ## Scope: deferred to Phase 2/3
 
@@ -101,11 +101,11 @@ Left out of this MVP pass — flagged rather than half-built:
 - **Multi-team/organization** support and admin user management UI.
 - Server-side **Docker-sandboxed** code execution (only needed if code must
   run somewhere other than the participants' own browsers).
-- Full test suite (API integration, Cypress E2E) — only utility and
-  socket-authorization unit tests exist so far (`cd backend && npm test`).
-  GitHub Actions (`.github/workflows/ci.yml`) lints both packages
-  (`npm run lint`), runs the tests, validates the Prisma schema and builds the
-  frontend on every pull request.
+- Browser end-to-end tests (Cypress/Playwright). Backend unit tests and API
+  integration tests against a real PostgreSQL exist (see "Running tests");
+  GitHub Actions (`.github/workflows/ci.yml`) lints both packages, runs both
+  test suites, validates the Prisma schema and builds the frontend on every
+  pull request.
 - CRDT-based (Yjs) editing — the current Socket.io broadcast sync is simpler
   and sufficient for the 2-4 participants a single interview has; Yjs is
   worth it if true offline-first / conflict-free editing becomes a
@@ -150,6 +150,19 @@ cp .env.example .env
 npm install
 npm run dev              # http://localhost:5173
 ```
+
+### Running tests
+```bash
+cd backend
+npm test                 # unit tests, no database needed
+# API integration tests: needs a disposable Postgres database whose name
+# ends in "_test" (the suite truncates tables and refuses anything else).
+DATABASE_URL=postgresql://kemsap:kemsap@localhost:5432/kemsap_codelive_test \
+  npm run test:integration
+```
+`test:integration` applies migrations and seeds the question bank first.
+Create the database once with
+`docker compose exec db createdb -U kemsap kemsap_codelive_test`.
 
 ### Or everything via Docker Compose
 ```bash

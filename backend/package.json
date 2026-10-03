@@ -11,7 +11,8 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "node prisma/seed.js",
     "lint": "eslint --max-warnings 0 src tests prisma",
-    "test": "jest --runInBand"
+    "test": "jest --runInBand --testPathIgnorePatterns /integration/",
+    "test:integration": "prisma migrate deploy && node prisma/seed.js && jest --runInBand tests/integration"
   },
   "dependencies": {
     "@prisma/client": "^5.20.0",

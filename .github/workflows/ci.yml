@@ -11,8 +11,24 @@ concurrency:
 
 jobs:
   backend:
-    name: Backend lint & tests
+    name: Backend lint, unit & API tests
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: codelive_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/codelive_test
     defaults:
       run:
         working-directory: backend
@@ -26,9 +42,8 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npx prisma validate
-        env:
-          DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
       - run: npm test
+      - run: npm run test:integration
 
   frontend:
     name: Frontend lint & build

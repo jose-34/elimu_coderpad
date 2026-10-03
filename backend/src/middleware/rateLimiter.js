@@ -1,10 +1,16 @@
 const rateLimit = require('express-rate-limit');
+const env = require('../config/env');
+
+// The API integration suite drives many requests from one IP; the limits
+// themselves are express-rate-limit's concern, not ours to re-test.
+const skip = () => env.nodeEnv === 'test';
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 20,
   standardHeaders: true,
   legacyHeaders: false,
+  skip,
   message: { error: 'Too many attempts, please try again later.' },
 });
 
@@ -13,6 +19,7 @@ const apiLimiter = rateLimit({
   limit: 120,
   standardHeaders: true,
   legacyHeaders: false,
+  skip,
   message: { error: 'Too many requests, please slow down.' },
 });
 
@@ -23,6 +30,7 @@ const joinLimiter = rateLimit({
   limit: 30,
   standardHeaders: true,
   legacyHeaders: false,
+  skip,
   message: { error: 'Too many attempts, please try again later.' },
 });
 
