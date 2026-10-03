@@ -103,8 +103,9 @@ Left out of this MVP pass — flagged rather than half-built:
   run somewhere other than the participants' own browsers).
 - Full test suite (API integration, Cypress E2E) — only utility and
   socket-authorization unit tests exist so far (`cd backend && npm test`).
-  GitHub Actions (`.github/workflows/ci.yml`) runs them, validates the Prisma
-  schema and builds the frontend on every pull request.
+  GitHub Actions (`.github/workflows/ci.yml`) lints both packages
+  (`npm run lint`), runs the tests, validates the Prisma schema and builds the
+  frontend on every pull request.
 - CRDT-based (Yjs) editing — the current Socket.io broadcast sync is simpler
   and sufficient for the 2-4 participants a single interview has; Yjs is
   worth it if true offline-first / conflict-free editing becomes a

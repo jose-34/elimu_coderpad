@@ -10,7 +10,7 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "node prisma/seed.js",
-    "lint": "eslint src",
+    "lint": "eslint --max-warnings 0 src tests prisma",
     "test": "jest --runInBand"
   },
   "dependencies": {
