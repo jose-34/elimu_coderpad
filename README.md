@@ -85,8 +85,8 @@ browser sessions (dev server **and** production build):
 **Not verified here:** successful Python execution — the sandbox this was
 built in blocks the Pyodide CDN. The *failure* path was verified (clear
 error, Run re-enabled). Run one Python interview manually before first use.
-Jitsi video is likewise unverified for the same reason. There is also no
-automated test suite yet (see Scope below).
+Jitsi video is likewise unverified for the same reason. There is only a
+small automated test suite so far (see Scope below).
 
 ## Scope: deferred to Phase 2/3
 
@@ -101,7 +101,9 @@ Left out of this MVP pass — flagged rather than half-built:
 - **Multi-team/organization** support and admin user management UI.
 - Server-side **Docker-sandboxed** code execution (only needed if code must
   run somewhere other than the participants' own browsers).
-- Formal test suite (Jest/Cypress) and CI pipeline.
+- Full test suite (API integration, Cypress E2E) and CI pipeline — only
+  utility and socket-authorization unit tests exist so far
+  (`cd backend && npm test`).
 - CRDT-based (Yjs) editing — the current Socket.io broadcast sync is simpler
   and sufficient for the 2-4 participants a single interview has; Yjs is
   worth it if true offline-first / conflict-free editing becomes a
@@ -179,4 +181,12 @@ loaded: `docker compose exec backend npm run prisma:seed`.)
   and the Jitsi iframe both require secure contexts in production browsers.
 - The candidate join flow is intentionally unauthenticated (session-code
   based) per the brief — session codes should be treated as bearer secrets
-  (don't log them, don't put them in analytics).
+  (don't log them, don't put them in analytics). Codes come from a CSPRNG and
+  the public join endpoint is rate-limited (30 lookups / 15 min per IP).
+- Socket rooms are authorized server-side: a guest socket must present the
+  session code in its handshake and can only join that interview; an
+  interviewer socket can only join interviews they own. Candidates cannot
+  relay `assessment:score` events.
+- With `NODE_ENV=production` the backend refuses to start without
+  `JWT_SECRET`/`JWT_REFRESH_SECRET`. Note `docker-compose.yml` still supplies
+  dev placeholders as defaults — set real values in your shell or `.env`.

@@ -8,11 +8,19 @@ function required(name, fallback) {
   return value;
 }
 
+const nodeEnv = process.env.NODE_ENV || 'development';
+const isProduction = nodeEnv === 'production';
+
+// Dev-only fallbacks; production must supply real secrets.
+function secret(name, devFallback) {
+  return required(name, isProduction ? undefined : devFallback);
+}
+
 module.exports = {
   port: parseInt(process.env.PORT || '5000', 10),
-  nodeEnv: process.env.NODE_ENV || 'development',
-  jwtSecret: required('JWT_SECRET', 'dev-secret-change-me'),
-  jwtRefreshSecret: required('JWT_REFRESH_SECRET', 'dev-refresh-secret-change-me'),
+  nodeEnv,
+  jwtSecret: secret('JWT_SECRET', 'dev-secret-change-me'),
+  jwtRefreshSecret: secret('JWT_REFRESH_SECRET', 'dev-refresh-secret-change-me'),
   accessTokenTtl: process.env.ACCESS_TOKEN_TTL || '15m',
   refreshTokenTtl: process.env.REFRESH_TOKEN_TTL || '7d',
   corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:5173',

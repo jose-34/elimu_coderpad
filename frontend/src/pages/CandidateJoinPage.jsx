@@ -40,23 +40,33 @@ export default function CandidateJoinPage() {
   const [code, setCode] = useState('');
   const [language, setLanguage] = useState('python');
   const [socket, setSocket] = useState(null);
+  const [loadError, setLoadError] = useState(null);
   const [secondsLeft, setSecondsLeft] = useState(INTERVIEW_MINUTES * 60);
 
   useEffect(() => {
-    api.get(`/interviews/join/${sessionCode}`).then(({ data }) => {
-      setSession(data);
-      setCode(data.codeContent || '');
-      setLanguage(data.language || 'python');
-    });
+    api
+      .get(`/interviews/join/${sessionCode}`)
+      .then(({ data }) => {
+        setSession(data);
+        setCode(data.codeContent || '');
+        setLanguage(data.language || 'python');
+      })
+      .catch((err) => {
+        setLoadError(
+          err.response?.status === 404
+            ? 'This interview link is invalid. Please check the link you were sent.'
+            : err.response?.data?.error || 'Could not load the interview. Please try again.',
+        );
+      });
   }, [sessionCode]);
 
   useEffect(() => {
     if (!guestName || !session) return undefined;
-    const s = connectSocket({ guestName });
+    const s = connectSocket({ guestName, sessionCode });
     s.on('connect', () => s.emit('interview:join', { interviewId: session.interviewId }));
     setSocket(s);
     return () => disconnectSocket();
-  }, [guestName, session]);
+  }, [guestName, session, sessionCode]);
 
   useEffect(() => {
     if (!guestName) return undefined;
@@ -64,6 +74,7 @@ export default function CandidateJoinPage() {
     return () => clearInterval(timer);
   }, [guestName]);
 
+  if (loadError) return <div className="p-6 text-red-600">{loadError}</div>;
   if (!session) return <div className="p-6 text-slate-500">Loading…</div>;
   if (!guestName) return <SystemCheck onReady={setGuestName} />;
 
